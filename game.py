@@ -35,3 +35,6 @@ class TGame:
             coords[1] < 0):
             return True
         return False
+    
+    def set_score(self, score: int):
+        self.score = score
