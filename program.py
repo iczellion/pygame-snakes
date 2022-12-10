@@ -36,9 +36,9 @@ def main():
     
     tgame = TGame.initialize(game_name="Snake", grid_size_pixels=400, grid_num_squares=20)
     size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
-    orientation = Orientation.RIGHT
+    default_orientation = Orientation.RIGHT
 
-    tsnake = TSnake(size_of_one_square, orientation)
+    tsnake = TSnake(size_of_one_square, default_orientation)
 
     pygame.init()
     #logo = pygame.image.load("logo32x32.png")
@@ -59,7 +59,7 @@ def main():
         # If it is, it means we are dead and should restart
         if tgame.coord_is_out_of_bound((tsnake.head_x, tsnake.head_y)):
             tsnake = None
-            tsnake = TSnake(size_of_one_square, orientation)
+            tsnake = TSnake(size_of_one_square, default_orientation)
             tgame.set_score(0)
 
         draw_background(screen)
@@ -72,15 +72,15 @@ def main():
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT and tsnake.head_orientation != Orientation.RIGHT:
-                    orientation = Orientation.LEFT
+                    tsnake.head_orientation = Orientation.LEFT
                 elif event.key == pygame.K_RIGHT and tsnake.head_orientation != Orientation.LEFT:
-                    orientation = Orientation.RIGHT
+                    tsnake.head_orientation = Orientation.RIGHT
                 elif event.key == pygame.K_UP and tsnake.head_orientation != Orientation.DOWN:
-                    orientation = Orientation.UP
+                    tsnake.head_orientation = Orientation.UP
                 elif event.key == pygame.K_DOWN and tsnake.head_orientation != Orientation.UP:
-                    orientation = Orientation.DOWN
+                    tsnake.head_orientation = Orientation.DOWN
 
-        tsnake.move_snake(orientation)
+        tsnake.move_snake(tsnake.head_orientation)
 
         #pygame.display.update()
         pygame.display.flip()
