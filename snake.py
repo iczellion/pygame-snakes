@@ -16,6 +16,7 @@ class TSnake:
         self.head_x = scale_factor + scale_factor
         self.head_y = 0
         self.snake_parts = []
+        self.is_alive = True
 
         self.add_snake_part((0, 0))
         self.add_snake_part((scale_factor, 0))
