@@ -52,8 +52,6 @@ def main():
     # main loop
     while running:
 
-        print(tgame.tsnake)
-
         if tgame.tsnake.is_alive == False:
             tgame.create_snake()
 
