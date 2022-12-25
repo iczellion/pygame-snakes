@@ -19,7 +19,7 @@ def draw_grid(screen, grid_size_pixels: int, grid_num_squares: int):
             pygame.draw.rect(screen, white_color, rect, 1)
 
 def draw_snake(screen, tgame: TGame, tsnake: TSnake):
-    head_color = (255, 0, 0)
+    head_color = (0, 0, 100)
     body_color = (0, 0, 255)
     size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
 
@@ -32,10 +32,19 @@ def draw_snake(screen, tgame: TGame, tsnake: TSnake):
         rect_body = pygame.Rect(sp[0], sp[1], size_of_one_square, size_of_one_square)
         pygame.draw.rect(screen, body_color, rect_body)
 
+def draw_apple(screen, tgame: TGame, apple: tuple):
+    apple_color = (255, 0, 0)
+    size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
+
+    # draw
+    rect_apple = pygame.Rect(apple[0], apple[1], size_of_one_square, size_of_one_square)
+    pygame.draw.rect(screen, apple_color, rect_apple)
+
 def main():
     
     tgame = TGame.initialize(game_name="Snake", grid_size_pixels=400, grid_num_squares=20)
     tgame.create_snake()
+    tgame.create_apple()
 
     pygame.init()
     #logo = pygame.image.load("logo32x32.png")
@@ -58,6 +67,7 @@ def main():
         draw_background(screen)
         draw_grid(screen, tgame.grid_size_pixels, tgame.grid_num_squares)
         draw_snake(screen, tgame, tgame.tsnake)
+        draw_apple(screen, tgame, tgame.apple_coords)
 
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
@@ -74,6 +84,10 @@ def main():
                     tgame.tsnake.head_orientation = Orientation.DOWN
 
         tgame.tsnake.move_snake(tgame.tsnake.head_orientation)
+
+        if(tgame.is_snake_colliding_with_apple()):
+            tgame.tsnake.grow_snake()
+            tgame.create_apple()
 
         # Check if snake is out of bounds
         # If it is, it means we are dead and should restart

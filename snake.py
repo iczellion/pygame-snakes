@@ -40,6 +40,10 @@ class TSnake:
     def remove_snake_part(self):
         self.snake_parts.pop(0)
     
+    def grow_snake(self):
+        tail_part = self.snake_parts[len(self.snake_parts) - 1]
+        self.add_snake_part((tail_part[0], tail_part[1]))
+    
     def move_snake(self, orientation: Orientation):
         head_coords_before_x = self.head_x
         head_coords_before_y = self.head_y

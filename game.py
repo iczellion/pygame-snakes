@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List
+import random
 
 from snake import TSnake, Orientation
 
@@ -13,6 +14,7 @@ class TGame:
         tgame.score = 0
         tgame.game_name = "Snake"
         tgame.tsnake = None
+        tgame.apple_coords = None
 
         bvalid = tgame.__validate_size_square_fits(grid_size_pixels, grid_num_squares)
         if not bvalid:
@@ -27,6 +29,14 @@ class TGame:
         size_of_one_square = self.grid_size_pixels / self.grid_num_squares
         default_orientation = Orientation.RIGHT
         self.tsnake = TSnake(size_of_one_square, default_orientation)
+    
+    def create_apple(self):
+        size_of_one_square = self.grid_size_pixels / self.grid_num_squares
+
+        random_x = random.randrange(0, self.grid_num_squares)
+        random_y = random.randrange(0, self.grid_num_squares)
+
+        self.apple_coords = (random_x * size_of_one_square, random_y * size_of_one_square)
 
     def __validate_size_square_fits(self, grid_size_pixels: int, grid_num_squares: int):
         if grid_size_pixels % grid_num_squares > 0:
@@ -44,3 +54,8 @@ class TGame:
     
     def set_score(self, score: int):
         self.score = score
+    
+    def is_snake_colliding_with_apple(self):
+        if self.tsnake.head_x == self.apple_coords[0] and self.tsnake.head_y == self.apple_coords[1]:
+            return True
+        return False
