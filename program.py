@@ -65,7 +65,7 @@ def main():
             tgame.create_snake()
 
         draw_background(screen)
-        draw_grid(screen, tgame.grid_size_pixels, tgame.grid_num_squares)
+        #draw_grid(screen, tgame.grid_size_pixels, tgame.grid_num_squares)
         draw_snake(screen, tgame, tgame.tsnake)
         draw_apple(screen, tgame, tgame.apple_coords)
 
@@ -98,7 +98,7 @@ def main():
         #pygame.display.update()
         pygame.display.flip()
 
-        clock.tick(10)
+        clock.tick(8)
     
     pygame.quit()
     quit()
