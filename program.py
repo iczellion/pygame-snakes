@@ -19,8 +19,8 @@ def draw_grid(screen, grid_size_pixels: int, grid_num_squares: int):
             pygame.draw.rect(screen, white_color, rect, 1)
 
 def draw_snake(screen, tgame: TGame, tsnake: TSnake):
-    head_color = (0, 0, 100)
-    body_color = (0, 0, 255)
+    head_color = (0, 0, 255)
+    body_color = (0, 0, 100)
     size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
 
     # draw head
@@ -42,13 +42,11 @@ def draw_apple(screen, tgame: TGame, apple: tuple):
 
 def main():
     
-    tgame = TGame.initialize(game_name="Snake", grid_size_pixels=400, grid_num_squares=20)
+    tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
     tgame.create_snake()
     tgame.create_apple()
 
     pygame.init()
-    #logo = pygame.image.load("logo32x32.png")
-    #pygame.display.set_icon(logo)
     pygame.display.set_caption(tgame.game_name)
     
     screen = pygame.display.set_mode((tgame.grid_size_pixels, tgame.grid_size_pixels))
