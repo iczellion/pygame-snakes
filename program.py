@@ -11,11 +11,12 @@ def draw_background(screen):
 
 def draw_grid(screen, grid_size_pixels: int, grid_num_squares: int):
     white_color = (200, 200, 200)
+    size_of_one_square = int(grid_size_pixels / grid_num_squares)
     
     # draw grid
-    for x in range(0, grid_size_pixels, grid_num_squares):
-        for y in range(0, grid_size_pixels, grid_num_squares):
-            rect = pygame.Rect(x, y, grid_num_squares, grid_num_squares)
+    for x in range(0, grid_size_pixels, size_of_one_square):
+        for y in range(0, grid_size_pixels, size_of_one_square):
+            rect = pygame.Rect(x, y, size_of_one_square, size_of_one_square)
             pygame.draw.rect(screen, white_color, rect, 1)
 
 def draw_snake(screen, tgame: TGame, tsnake: TSnake):
