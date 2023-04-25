@@ -12,6 +12,7 @@ class TGame:
         # initialize game
         tgame = TGame()
         tgame.score = 0
+        tgame.is_terminated = False
         tgame.game_name = "Snake"
         tgame.tsnake = None
         tgame.apple_coords = None
