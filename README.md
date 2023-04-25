@@ -24,7 +24,6 @@ pip install -r .\requirements.txt
 
 # Start snake
 
-```powershell
-# Start snake
-python .\src\program.py
+```
+python .\src\program.py -h
 ```
