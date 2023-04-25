@@ -1,12 +1,59 @@
+import argparse
+from enum import Enum
+
 import pygame
 
 from game import TGame
+from inputctrl import InputCtrl
 from render import Renderer
 from snake import TSnake, Orientation
 
-def main():
+# Globals
+GAME_NAME = "Snake"
+GRID_SIZE_PIXELS = 600
+GRID_NUM_SQUARES = 20
+TGAME = None
+
+class Gamemode(Enum):
+    INTERACTIVE = 1
+    TRAIN = 2
+    AI = 3
+
+def parse_commandline_args() -> str:
+
+    opts = None
+
+    main_parser = argparse.ArgumentParser(add_help=True)
+    main_parser.add_argument('--debug', default=False, required=False, action='store_true', dest="debug", help='Set debug flag')
+    subparsers = main_parser.add_subparsers(title="service", dest="service_commands")
+
+    interactive_parser = subparsers.add_parser("int", help="Runs snake in interactive mode", add_help=True)
+    interactive_parser.set_defaults(mode=Gamemode.INTERACTIVE)
+
+    train_parser = subparsers.add_parser("train", help="Runs snake in auto-training mode", add_help=True)
+    train_parser.set_defaults(mode=Gamemode.TRAIN)
+
+    ai_parser = subparsers.add_parser("ai", help="Runs snake in AI mode", add_help=True)
+    ai_parser.set_defaults(mode=Gamemode.AI)
+
+    args = main_parser.parse_args()
+
+    if(args.service_commands is None):
+        main_parser.print_help()
+    else:
+        pass
     
+    return args.mode
+
+def run(mode: Gamemode):
+
     tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
+    inputctrl = InputCtrl(tgame)
+
+    # Disable reacting to keyboard keydown events
+    if mode != Gamemode.INTERACTIVE:
+        inputctrl.set_controls_enabled(False)
+
     tgame.create_snake()
     tgame.create_apple()
 
@@ -15,14 +62,11 @@ def main():
     
     screen = pygame.display.set_mode((tgame.grid_size_pixels, tgame.grid_size_pixels))
     render = Renderer(screen)
-    
-    # change the value to False, to exit the main loop
-    running = True
-    
+      
     clock = pygame.time.Clock()
 
     # main loop
-    while running:
+    while not tgame.is_terminated:
 
         if tgame.tsnake.is_alive == False:
             tgame.create_snake()
@@ -32,19 +76,8 @@ def main():
         render.draw_snake(tgame, tgame.tsnake)
         render.draw_apple(tgame, tgame.apple_coords)
 
-        # event handling, gets all event from the event queue
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and tgame.tsnake.head_orientation != Orientation.RIGHT:
-                    tgame.tsnake.head_orientation = Orientation.LEFT
-                elif event.key == pygame.K_RIGHT and tgame.tsnake.head_orientation != Orientation.LEFT:
-                    tgame.tsnake.head_orientation = Orientation.RIGHT
-                elif event.key == pygame.K_UP and tgame.tsnake.head_orientation != Orientation.DOWN:
-                    tgame.tsnake.head_orientation = Orientation.UP
-                elif event.key == pygame.K_DOWN and tgame.tsnake.head_orientation != Orientation.UP:
-                    tgame.tsnake.head_orientation = Orientation.DOWN
+        # Change game state based on keydown event
+        inputctrl.change_gamestate_on_keydown()
 
         tgame.tsnake.move_snake(tgame.tsnake.head_orientation)
 
@@ -67,4 +100,5 @@ def main():
     quit()
 
 if __name__=="__main__":
-    main()
+    gamemode = parse_commandline_args()
+    run(gamemode)
