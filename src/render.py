@@ -30,12 +30,12 @@ class Renderer:
         size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
 
         # draw head
-        rect_head = pygame.Rect(tsnake.head_x, tsnake.head_y, size_of_one_square, size_of_one_square)
+        rect_head = pygame.Rect(tsnake.head_x * size_of_one_square, tsnake.head_y * size_of_one_square, size_of_one_square, size_of_one_square)
         pygame.draw.rect(self.screen, head_color, rect_head)
 
         # draw body
         for sp in tsnake.snake_parts:
-            rect_body = pygame.Rect(sp[0], sp[1], size_of_one_square, size_of_one_square)
+            rect_body = pygame.Rect(sp[0] * size_of_one_square, sp[1] * size_of_one_square, size_of_one_square, size_of_one_square)
             pygame.draw.rect(self.screen, body_color, rect_body)
 
     def draw_apple(self, tgame: TGame, apple: tuple):
@@ -43,5 +43,5 @@ class Renderer:
         size_of_one_square = tgame.grid_size_pixels / tgame.grid_num_squares
 
         # draw
-        rect_apple = pygame.Rect(apple[0], apple[1], size_of_one_square, size_of_one_square)
+        rect_apple = pygame.Rect(apple[0] * size_of_one_square, apple[1] * size_of_one_square, size_of_one_square, size_of_one_square)
         pygame.draw.rect(self.screen, apple_color, rect_apple)

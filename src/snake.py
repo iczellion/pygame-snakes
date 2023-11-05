@@ -9,30 +9,29 @@ class Orientation(Enum):
 
 class TSnake:
 
-    def __init__(self, scale_factor: int, head_orientation: Orientation):
-        self.scale_factor = scale_factor
+    def __init__(self, head_orientation: Orientation):
         self.head_orientation = head_orientation
         self.length: int = 1
-        self.head_x = scale_factor + scale_factor
+        self.head_x = 2
         self.head_y = 0
         self.snake_parts = []
         self.is_alive = True
 
         self.add_snake_part((0, 0))
-        self.add_snake_part((scale_factor, 0))
+        self.add_snake_part((1, 0))
     
     def move_snake_head(self, orientation: Orientation):
         orientation_before = self.head_orientation
         self.head_orientation = orientation
 
         if orientation == Orientation.UP:
-            self.head_y = self.head_y - self.scale_factor
+            self.head_y = self.head_y - 1
         elif orientation == Orientation.RIGHT:
-            self.head_x = self.head_x + self.scale_factor
+            self.head_x = self.head_x + 1
         elif orientation == Orientation.DOWN:
-            self.head_y = self.head_y + self.scale_factor
+            self.head_y = self.head_y + 1
         elif orientation == Orientation.LEFT:
-            self.head_x = self.head_x - self.scale_factor
+            self.head_x = self.head_x - 1
     
     def add_snake_part(self, coords: tuple):
         self.snake_parts.append(coords)

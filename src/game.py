@@ -27,17 +27,14 @@ class TGame:
         return tgame
 
     def create_snake(self):
-        size_of_one_square = self.grid_size_pixels / self.grid_num_squares
         default_orientation = Orientation.RIGHT
-        self.tsnake = TSnake(size_of_one_square, default_orientation)
+        self.tsnake = TSnake(default_orientation)
     
     def create_apple(self):
-        size_of_one_square = self.grid_size_pixels / self.grid_num_squares
-
         random_x = random.randrange(0, self.grid_num_squares)
         random_y = random.randrange(0, self.grid_num_squares)
 
-        self.apple_coords = (random_x * size_of_one_square, random_y * size_of_one_square)
+        self.apple_coords = (random_x, random_y)
 
     def __validate_size_square_fits(self, grid_size_pixels: int, grid_num_squares: int):
         if grid_size_pixels % grid_num_squares > 0:
@@ -46,9 +43,9 @@ class TGame:
         return True
     
     def coord_is_out_of_bound(self, coords: tuple):
-        if  (coords[0] >= self.grid_size_pixels or
+        if  (coords[0] >= self.grid_num_squares or
             coords[0] < 0 or
-            coords[1] >= self.grid_size_pixels or
+            coords[1] >= self.grid_num_squares or
             coords[1] < 0):
             return True
         return False
