@@ -1,12 +1,15 @@
+
+Training course: https://www.coursera.org/learn/complete-reinforcement-learning-system/
+
 Reward:
+    - snake dies: -1000
     - eat food: +10
-    - game over: -10
-    - else: 0
+    - snake moves a block: -1
 
 Action:
-    [1, 0, 0] -> straight
-    [0, 1, 0] -> right turn
-    [0, 0, 1] -> left turn
+    [1, 0, 0] -> straight (up arrow key)
+    [0, 1, 0] -> right turn (right arrow key)
+    [0, 0, 1] -> left turn (left arrow key)
 
     * All of these are based on current direction
 
