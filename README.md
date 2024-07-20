@@ -5,24 +5,19 @@ A simple Snake game written using Python and the pygame library.  You can contro
 
 # Requirements
 
-- Python 3.9.x
+- Python 3.11.x
+- Poetry 1.8+
 
 
 # Develop locally
 
-```powershell
+```shell
 # Create virtual env
-python -m venv .venv
+poetry env use $(which python3.11)
 
 # Activate virtualenv
-. .venv/bin/activate
-
-# Install pip dependancies
-pip install -r requirements.txt
-```
+poetry shell
 
 # Start snake
-
-```
-python3 src/program.py -h
+python src/program.py -h
 ```
