@@ -48,14 +48,12 @@ def parse_commandline_args() -> str:
 def run(mode: Gamemode):
 
     tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
+    tgame.reset()
     inputctrl = InputCtrl(tgame)
 
     # Disable reacting to keyboard keydown events
     if mode != Gamemode.INTERACTIVE:
         inputctrl.set_controls_enabled(False)
-
-    tgame.create_snake()
-    tgame.create_apple()
 
     pygame.init()
     pygame.display.set_caption(tgame.game_name)
@@ -69,7 +67,7 @@ def run(mode: Gamemode):
     while not tgame.is_terminated:
 
         if tgame.tsnake.is_alive == False:
-            tgame.create_snake()
+            tgame.reset()
 
         render.draw_background()
         #render.draw_grid(tgame.grid_size_pixels, tgame.grid_num_squares)
@@ -88,7 +86,7 @@ def run(mode: Gamemode):
         # Check if snake is out of bounds
         # If it is, it means we are dead and should restart
         if tgame.coord_is_out_of_bound((tgame.tsnake.head_x, tgame.tsnake.head_y)):
-            tgame.tsnake.is_alive = False
+            tgame.tsnake.set_alive(False)
             tgame.set_score(0)
 
         #pygame.display.update()

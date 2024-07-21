@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from enum import Enum
 
 class Orientation(Enum):
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-    LEFT = 4
+    UP = 0
+    RIGHT = 1
+    DOWN = 2
+    LEFT = 3
 
 class TSnake:
 
@@ -50,4 +50,6 @@ class TSnake:
         self.move_snake_head(orientation)
         self.remove_snake_part()
         self.add_snake_part((head_coords_before_x, head_coords_before_y))
-        
+    
+    def set_alive(self, is_alive: bool):
+        self.is_alive = is_alive

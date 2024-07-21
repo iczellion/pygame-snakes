@@ -57,3 +57,9 @@ class TGame:
         if self.tsnake.head_x == self.apple_coords[0] and self.tsnake.head_y == self.apple_coords[1]:
             return True
         return False
+
+    def reset(self):
+        self.create_snake()
+        self.create_apple()
+        self.set_score(0)
+        self.is_terminated = False
