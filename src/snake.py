@@ -11,14 +11,16 @@ class TSnake:
 
     def __init__(self, head_orientation: Orientation):
         self.head_orientation = head_orientation
-        self.length: int = 1
-        self.head_x = 2
-        self.head_y = 0
+        self.initial_length: int = 3
         self.snake_parts = []
         self.is_alive = True
 
-        self.add_snake_part((0, 0))
-        self.add_snake_part((1, 0))
+        for i in range(0, self.initial_length - 1):
+            print(i)
+            self.add_snake_part((i, 0))
+        
+        self.head_x = self.initial_length - 1
+        self.head_y = 0
     
     def move_snake_head(self, orientation: Orientation):
         orientation_before = self.head_orientation
