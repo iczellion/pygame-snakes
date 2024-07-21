@@ -5,7 +5,7 @@ import pygame
 
 from game import TGame
 from inputctrl import InputCtrl
-from render import Renderer
+from renderer import Renderer
 from snake import TSnake, Orientation
 
 # Globals
@@ -59,7 +59,7 @@ def run(mode: Gamemode):
     pygame.display.set_caption(tgame.game_name)
     
     screen = pygame.display.set_mode((tgame.grid_size_pixels, tgame.grid_size_pixels))
-    render = Renderer(screen)
+    renderer = Renderer(screen)
       
     clock = pygame.time.Clock()
 
@@ -69,10 +69,7 @@ def run(mode: Gamemode):
         if tgame.tsnake.is_alive == False:
             tgame.reset()
 
-        render.draw_background()
-        #render.draw_grid(tgame.grid_size_pixels, tgame.grid_num_squares)
-        render.draw_snake(tgame, tgame.tsnake)
-        render.draw_apple(tgame, tgame.apple_coords)
+        renderer.render_all(tgame)
 
         # Change game state based on keydown event
         inputctrl.change_gamestate_on_keydown()
