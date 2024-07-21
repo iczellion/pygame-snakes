@@ -16,6 +16,7 @@ class TGame:
         tgame.game_name = "Snake"
         tgame.tsnake = None
         tgame.apple_coords = None
+        tgame.fov_distance = 5
 
         bvalid = tgame.__validate_size_square_fits(grid_size_pixels, grid_num_squares)
         if not bvalid:

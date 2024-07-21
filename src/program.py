@@ -63,7 +63,7 @@ def run(mode: Gamemode):
         if tgame.tsnake.is_alive == False:
             tgame.reset()
 
-        renderer.render_all(tgame)
+        renderer.render_all(tgame, debug=False)
 
         # Change game state based on keydown event
         inputctrl.change_gamestate_on_keydown()
@@ -83,7 +83,7 @@ def run(mode: Gamemode):
         #pygame.display.update()
         pygame.display.flip()
 
-        clock.tick(8)
+        clock.tick(10)
     
     pygame.quit()
     quit()
