@@ -8,12 +8,6 @@ from inputctrl import InputCtrl
 from renderer import Renderer
 from snake import TSnake, Orientation
 
-# Globals
-GAME_NAME = "Snake"
-GRID_SIZE_PIXELS = 600
-GRID_NUM_SQUARES = 20
-TGAME = None
-
 class Gamemode(Enum):
     INTERACTIVE = 1
     TRAIN = 2

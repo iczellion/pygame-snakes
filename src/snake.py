@@ -16,7 +16,6 @@ class TSnake:
         self.is_alive = True
 
         for i in range(0, self.initial_length - 1):
-            print(i)
             self.add_snake_part((i, 0))
         
         self.head_x = self.initial_length - 1
