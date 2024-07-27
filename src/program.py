@@ -13,7 +13,7 @@ class Gamemode(Enum):
     TRAIN = 2
     AI = 3
 
-def parse_commandline_args() -> str:
+def parse_commandline_args() -> tuple:
 
     opts = None
 
@@ -37,9 +37,9 @@ def parse_commandline_args() -> str:
     else:
         pass
     
-    return args.mode
+    return args.mode, args.debug
 
-def run(mode: Gamemode):
+def run(mode: Gamemode, debug: bool):
 
     tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
     tgame.reset()
@@ -63,7 +63,7 @@ def run(mode: Gamemode):
         if tgame.tsnake.is_alive == False:
             tgame.reset()
 
-        renderer.render_all(tgame, debug=False)
+        renderer.render_all(tgame, debug=debug)
 
         # Change game state based on keydown event
         inputctrl.change_gamestate_on_keydown()
@@ -89,5 +89,5 @@ def run(mode: Gamemode):
     quit()
 
 if __name__=="__main__":
-    gamemode = parse_commandline_args()
-    run(gamemode)
+    gamemode, debug = parse_commandline_args()
+    run(gamemode, debug)
