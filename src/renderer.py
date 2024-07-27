@@ -5,8 +5,8 @@ from snake import TSnake, Orientation
 
 class Renderer:
 
-    def __init__(self, screen: pygame.Surface):
-        self.screen = screen
+    def __init__(self, grid_size_pixels: int, grid_num_squares: int):
+        self.screen = pygame.display.set_mode((grid_size_pixels, grid_size_pixels))
     
     def draw_background(self):
         black_color = (0, 0, 0)
