@@ -7,6 +7,7 @@ from game import TGame
 from inputctrl import InputCtrl
 from renderer import Renderer
 from snake import TSnake, Orientation
+from envs.snake_env import SnakeEnv
 
 class Gamemode(Enum):
     INTERACTIVE = 1
@@ -41,7 +42,11 @@ def parse_commandline_args() -> tuple:
 
 def run(mode: Gamemode, debug: bool):
 
-    tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, framerate=10, inputs_enabled=True, rendering_enabled=True, debug=debug)
+    if mode == Gamemode.INTERACTIVE:
+        tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, framerate=10, inputs_enabled=True, rendering_enabled=True, debug=debug)
+
+    if mode == Gamemode.AI:
+        env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, fov_distance=5)
 
     quit()
 

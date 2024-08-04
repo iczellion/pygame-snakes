@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import pygame
 
-from game import TGame
 from snake import TSnake, Orientation
 
 class InputCtrl():
 
-    def __init__(self, tgame):
+    def __init__(self, tgame: TGame):
         self.tgame = tgame
         self.controls_enabled = True
 

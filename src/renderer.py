@@ -1,11 +1,11 @@
-import pygame
+from __future__ import annotations
 
-from game import TGame
-from snake import TSnake, Orientation
+import pygame
 
 class Renderer:
 
-    def __init__(self, grid_size_pixels: int, grid_num_squares: int):
+    def __init__(self, game_name: str, grid_size_pixels: int, grid_num_squares: int):
+        pygame.display.set_caption(game_name)
         self.screen = pygame.display.set_mode((grid_size_pixels, grid_size_pixels))
     
     def draw_background(self):
@@ -69,3 +69,5 @@ class Renderer:
 
         self.draw_snake(tgame)
         self.draw_apple(tgame)
+
+        pygame.display.flip()

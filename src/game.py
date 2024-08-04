@@ -5,29 +5,28 @@ import random
 import pygame
 
 from snake import TSnake, Orientation
+from renderer import Renderer
+from inputctrl import InputCtrl
 
 class TGame:
 
     @staticmethod
     def initialize(game_name: str, grid_size_pixels: int, grid_num_squares: int, framerate: int, inputs_enabled: bool, rendering_enabled: bool, debug: bool):
 
-        from renderer import Renderer
-
         # initialize game
         tgame = TGame()
         tgame.score = 0
-        tgame.is_terminated = False
+        tgame.set_terminated(False)
         tgame.game_name = game_name
         tgame.tsnake = None
         tgame.apple_coords = None
         tgame.fov_distance = 5
 
-        # Enable reacting to keyboard keydown events
-        if inputs_enabled:
-            from inputctrl import InputCtrl
+        tgame.inputctrl = InputCtrl(tgame)
 
-            tgame.inputctrl = InputCtrl(tgame)
-            tgame.inputctrl.set_controls_enabled(True)
+        # Disable reacting to keyboard keydown events
+        if not inputs_enabled:
+            tgame.inputctrl.set_controls_enabled(False)
 
         bvalid = tgame.__validate_size_square_fits(grid_size_pixels, grid_num_squares)
         if not bvalid:
@@ -39,8 +38,7 @@ class TGame:
         pygame.init()
 
         if rendering_enabled:
-            pygame.display.set_caption(game_name)
-            tgame.renderer = Renderer(grid_size_pixels, grid_num_squares)
+            tgame.renderer = Renderer(game_name, grid_size_pixels, grid_num_squares)
 
         tgame.reset()
 
@@ -84,7 +82,10 @@ class TGame:
         self.create_snake()
         self.create_apple()
         self.set_score(0)
-        self.is_terminated = False
+        self.set_terminated(False)
+    
+    def set_terminated(self, is_terminated: bool):
+        self.is_terminated = is_terminated
 
     def start_game_loop(self, framerate: int, debug:bool):
         renderer = self.renderer
@@ -99,10 +100,9 @@ class TGame:
             if self.tsnake.is_alive == False:
                 self.reset()
 
-            renderer.render_all(self, debug=debug)
-
             # Change game state based on keydown event
-            inputctrl.change_gamestate_on_keydown()
+            if inputctrl != None:
+                inputctrl.change_gamestate_on_keydown()
 
             self.tsnake.move_snake(self.tsnake.head_orientation)
 
@@ -116,8 +116,7 @@ class TGame:
                 self.tsnake.set_alive(False)
                 self.set_score(0)
 
-            #pygame.display.update()
-            pygame.display.flip()
+            renderer.render_all(self, debug=debug)
 
             clock.tick(framerate)
         
