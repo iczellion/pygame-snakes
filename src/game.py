@@ -86,6 +86,19 @@ class TGame:
     
     def set_terminated(self, is_terminated: bool):
         self.is_terminated = is_terminated
+    
+    def perform_action(self, orientation: Orientation):
+        self.tsnake.move_snake(orientation)
+
+        if(self.is_snake_colliding_with_apple()):
+            self.tsnake.grow_snake()
+            self.create_apple()
+
+        # Check if snake is out of bounds
+        # If it is, it means we are dead and should restart
+        if self.coord_is_out_of_bound((self.tsnake.head_x, self.tsnake.head_y)):
+            self.tsnake.set_alive(False)
+            self.set_score(0)
 
     def start_game_loop(self, framerate: int, debug:bool):
         renderer = self.renderer
@@ -100,21 +113,15 @@ class TGame:
             if self.tsnake.is_alive == False:
                 self.reset()
 
-            # Change game state based on keydown event
-            if inputctrl != None:
-                inputctrl.change_gamestate_on_keydown()
+            future_orientation = self.tsnake.head_orientation
 
-            self.tsnake.move_snake(self.tsnake.head_orientation)
-
-            if(self.is_snake_colliding_with_apple()):
-                self.tsnake.grow_snake()
-                self.create_apple()
-
-            # Check if snake is out of bounds
-            # If it is, it means we are dead and should restart
-            if self.coord_is_out_of_bound((self.tsnake.head_x, self.tsnake.head_y)):
-                self.tsnake.set_alive(False)
-                self.set_score(0)
+            # Change game state base on events event
+            input_orientation = inputctrl.change_gamestate_input_events()
+            if inputctrl.controls_enabled:
+                if input_orientation != Orientation.NONE:
+                    future_orientation = input_orientation
+            
+            self.perform_action(future_orientation)
 
             renderer.render_all(self, debug=debug)
 

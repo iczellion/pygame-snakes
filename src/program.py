@@ -43,7 +43,7 @@ def parse_commandline_args() -> tuple:
 def run(mode: Gamemode, debug: bool):
 
     if mode == Gamemode.INTERACTIVE:
-        tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, framerate=10, inputs_enabled=True, rendering_enabled=True, debug=debug)
+        tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, framerate=15, inputs_enabled=True, rendering_enabled=True, debug=debug)
 
     if mode == Gamemode.AI:
         env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, fov_distance=5)
