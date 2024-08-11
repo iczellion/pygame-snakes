@@ -40,7 +40,6 @@ class TSnake:
         self.head_orientation = orientation
         return True
         
-    
     def add_snake_part(self, coords: tuple):
         self.snake_parts.append(coords)
     

@@ -15,12 +15,14 @@ class TGame:
 
         # initialize game
         tgame = TGame()
+        tgame.debug = debug
         tgame.score = 0
         tgame.set_terminated(False)
         tgame.game_name = game_name
         tgame.tsnake = None
         tgame.apple_coords = None
         tgame.fov_distance = 5
+        tgame.framerate = framerate
 
         tgame.inputctrl = InputCtrl(tgame)
 
@@ -38,11 +40,7 @@ class TGame:
         pygame.init()
 
         if rendering_enabled:
-            tgame.renderer = Renderer(game_name, grid_size_pixels, grid_num_squares)
-
-        tgame.reset()
-
-        tgame.start_game_loop(framerate=framerate, debug=debug)
+            tgame.renderer = Renderer(tgame)
 
         return tgame
 
@@ -87,6 +85,9 @@ class TGame:
     def set_terminated(self, is_terminated: bool):
         self.is_terminated = is_terminated
     
+    def close(self):
+        pygame.quit()
+    
     def perform_action(self, orientation: Orientation):
         self.tsnake.move_snake(orientation)
 
@@ -100,7 +101,7 @@ class TGame:
             self.tsnake.set_alive(False)
             self.set_score(0)
 
-    def start_game_loop(self, framerate: int, debug:bool):
+    def start_game_loop(self):
         renderer = self.renderer
         inputctrl = self.inputctrl
 
@@ -123,8 +124,8 @@ class TGame:
             
             self.perform_action(future_orientation)
 
-            renderer.render_all(self, debug=debug)
+            renderer.render_all()
 
-            clock.tick(framerate)
+            clock.tick(self.framerate)
         
-        pygame.quit()
+        self.close()
