@@ -24,21 +24,13 @@ class TSnake:
         self.head_y = 0
 
     def move_snake_head(self, orientation: Orientation):
-
-        if self.orientation_before == Orientation.UP and orientation != Orientation.DOWN:
-            self.head_y = self.head_y - 1
-        elif self.orientation_before == Orientation.RIGHT and orientation != Orientation.LEFT:
-            self.head_x = self.head_x + 1
-        elif self.orientation_before == Orientation.DOWN and orientation != Orientation.UP:
-            self.head_y = self.head_y + 1
-        elif self.orientation_before == Orientation.LEFT and orientation != Orientation.RIGHT:
-            self.head_x = self.head_x - 1
-        else:
-            return False
+        self.head_y = self.head_y - 1 if orientation == Orientation.UP else self.head_y
+        self.head_x = self.head_x + 1 if orientation == Orientation.RIGHT else self.head_x
+        self.head_y = self.head_y + 1 if orientation == Orientation.DOWN else self.head_y
+        self.head_x = self.head_x - 1 if orientation == Orientation.LEFT else self.head_x
         
         self.orientation_before = self.head_orientation
         self.head_orientation = orientation
-        return True
         
     def add_snake_part(self, coords: tuple):
         self.snake_parts.append(coords)
@@ -51,13 +43,19 @@ class TSnake:
         self.add_snake_part((tail_part[0], tail_part[1]))
     
     def move_snake(self, orientation: Orientation):
+        # Check if movement is valid (can't move in opposite direction)
+        if ((self.orientation_before == Orientation.UP and orientation == Orientation.DOWN) or
+            (self.orientation_before == Orientation.DOWN and orientation == Orientation.UP) or
+            (self.orientation_before == Orientation.LEFT and orientation == Orientation.RIGHT) or
+            (self.orientation_before == Orientation.RIGHT and orientation == Orientation.LEFT)):
+            return
+
         head_coords_before_x = self.head_x
         head_coords_before_y = self.head_y
 
-        snake_movable = self.move_snake_head(orientation)
-        if snake_movable:
-            self.remove_snake_part()
-            self.add_snake_part((head_coords_before_x, head_coords_before_y))
+        self.move_snake_head(orientation)
+        self.remove_snake_part()
+        self.add_snake_part((head_coords_before_x, head_coords_before_y))
     
     def set_alive(self, is_alive: bool):
         self.is_alive = is_alive
