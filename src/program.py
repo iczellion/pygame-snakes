@@ -47,7 +47,7 @@ def run(mode: Gamemode, debug: bool):
         tgame.reset()
         tgame.start_game_loop()
     elif mode == Gamemode.AI:
-        env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
+        env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, debug=debug)
         env.reset()
 
         for i in range(300): # run for 30 steps

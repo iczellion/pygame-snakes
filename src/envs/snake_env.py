@@ -9,7 +9,7 @@ from game import TGame
 class SnakeEnv(gym.Env):
     metadata = {"render_modes": ["human"]}
 
-    def __init__(self, game_name="Snake-rl", grid_size_pixels=600, grid_num_squares=20, fov_distance=5):
+    def __init__(self, game_name="Snake-rl", grid_size_pixels=600, grid_num_squares=20, fov_distance=5, debug=False):
         """
         Initialize the Snake environment.
 
@@ -19,7 +19,7 @@ class SnakeEnv(gym.Env):
             fov_distance (int): Distance (in number of squares) of how far the snake will see.
             num_frames (int): Number of frames to stack in the observation space.
         """
-        self.debug = True
+        self.debug = debug
         self.reward_move = -1
         self.reward_collision = -1000
         self.reward_apple = 100

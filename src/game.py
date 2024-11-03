@@ -117,14 +117,18 @@ class TGame:
         
         # Check if the next move would be out of bounds
         if self.coord_is_out_of_bound((new_head_x, new_head_y)):
-            print("COLLISION WITH OUT OF BOUNDS")
+            if self.debug:
+                print("Snake out of bound")
+
             self.tsnake.set_alive(False)
             self.set_score(0)
             return False
 
         # Check if the next move would collide with snake body
         if (new_head_x, new_head_y) in self.tsnake.snake_parts:
-            print("COLLISION WITH ITSELF")
+            if self.debug:
+                print("Snake collided with itself")
+
             self.tsnake.set_alive(False)
             self.set_score(0)
             return False
@@ -133,7 +137,9 @@ class TGame:
         self.tsnake.move_snake(orientation)
 
         if(self.is_snake_colliding_with_apple()):
-            print("COLLISION WITH APPLE")
+            if self.debug:
+                print("Snake eats an apple")
+
             self.tsnake.grow_snake()
             self.create_apple()
             self.set_score(self.score + 1)
