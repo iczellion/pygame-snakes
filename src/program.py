@@ -50,17 +50,20 @@ def run(mode: Gamemode, debug: bool):
         env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20)
         env.reset()
 
-        for i in range(30): # run for 30 steps
+        for i in range(300): # run for 30 steps
             if env.tgame.is_terminated:
                 env.close()
                 return
 
             action = env.action_space.sample()
-            print(env.tgame.tsnake.is_alive)
-            env.step(action)
+            observation, reward, terminated, truncated, info = env.step(action)
+
+            if terminated:
+                env.reset()
+                return
 
             env.render()
-            pygame.time.wait(100)
+            pygame.time.wait(200)
 
     quit()
 

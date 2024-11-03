@@ -16,7 +16,7 @@ class TGame:
         # initialize game
         tgame = TGame()
         tgame.debug = debug
-        tgame.score = 0
+        tgame.set_score(0)
         tgame.set_terminated(False)
         tgame.game_name = game_name
         tgame.tsnake = None
@@ -76,6 +76,12 @@ class TGame:
             return True
         return False
 
+    def is_snake_colliding_with_itself(self):
+        for part in self.tsnake.snake_parts:
+            if part[0] == self.tsnake.head_x and part[1] == self.tsnake.head_y:
+                return True
+        return False
+
     def reset(self):
         self.create_snake()
         self.create_apple()
@@ -89,17 +95,50 @@ class TGame:
         pygame.quit()
     
     def perform_action(self, orientation: Orientation):
+        # Prevent the snake from reversing directly onto itself
+        if  (orientation == Orientation.UP and self.tsnake.head_orientation == Orientation.DOWN) or \
+            (orientation == Orientation.DOWN and self.tsnake.head_orientation == Orientation.UP) or \
+            (orientation == Orientation.LEFT and self.tsnake.head_orientation == Orientation.RIGHT) or \
+            (orientation == Orientation.RIGHT and self.tsnake.head_orientation == Orientation.LEFT):
+                orientation = self.tsnake.head_orientation  # Maintain current direction
+
+        # Calculate where the head will be after moving
+        new_head_x = self.tsnake.head_x
+        new_head_y = self.tsnake.head_y
+    
+        if orientation == Orientation.UP:
+            new_head_y -= 1
+        elif orientation == Orientation.RIGHT:
+            new_head_x += 1
+        elif orientation == Orientation.DOWN:
+            new_head_y += 1
+        elif orientation == Orientation.LEFT:
+            new_head_x -= 1
+        
+        # Check if the next move would be out of bounds
+        if self.coord_is_out_of_bound((new_head_x, new_head_y)):
+            print("COLLISION WITH OUT OF BOUNDS")
+            self.tsnake.set_alive(False)
+            self.set_score(0)
+            return False
+
+        # Check if the next move would collide with snake body
+        if (new_head_x, new_head_y) in self.tsnake.snake_parts:
+            print("COLLISION WITH ITSELF")
+            self.tsnake.set_alive(False)
+            self.set_score(0)
+            return False
+        
+        # If we get here, the move is safe, so execute it
         self.tsnake.move_snake(orientation)
 
         if(self.is_snake_colliding_with_apple()):
+            print("COLLISION WITH APPLE")
             self.tsnake.grow_snake()
             self.create_apple()
+            self.set_score(self.score + 1)
 
-        # Check if snake is out of bounds
-        # If it is, it means we are dead and should restart
-        if self.coord_is_out_of_bound((self.tsnake.head_x, self.tsnake.head_y)):
-            self.tsnake.set_alive(False)
-            self.set_score(0)
+        return True
 
     def start_game_loop(self):
         renderer = self.renderer
@@ -122,7 +161,7 @@ class TGame:
                 if input_orientation != Orientation.NONE:
                     future_orientation = input_orientation
             
-            self.perform_action(future_orientation)
+            action_possible = self.perform_action(future_orientation)
 
             renderer.render_all()
 
