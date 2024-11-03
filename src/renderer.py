@@ -60,6 +60,18 @@ class Renderer:
 
         rect_area = pygame.Rect(fov_top_x_pixel, head_top_y_pixel, fov_area, fov_area)
         pygame.draw.rect(self.screen, fov_color, rect_area)
+    
+    def draw_score(self):
+        font = pygame.font.Font(None, 36)
+        score_text = f"Score: {self.tgame.score}"
+        text_surface = font.render(score_text, True, (255, 255, 255))  # White text
+        
+        # Position in top right with some padding
+        padding = 10
+        text_rect = text_surface.get_rect()
+        text_rect.topright = (self.tgame.grid_size_pixels - padding, padding)
+        
+        self.screen.blit(text_surface, text_rect)    
 
     def render_all(self):
         self.draw_background()
@@ -70,5 +82,6 @@ class Renderer:
 
         self.draw_snake()
         self.draw_apple()
+        self.draw_score()
 
         pygame.display.flip()
