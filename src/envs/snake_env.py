@@ -28,16 +28,16 @@ class SnakeEnv(gym.Env):
 
         self.steps_count = 0
         self.steps_max = 1000
-        self.num_stacked_frames = 0
-        self.frame_stack = np.zeros((self.num_stacked_frames, fov_distance, fov_distance), dtype=np.uint8) # Initialize the frame stack
+        self.num_stacked_frames = 2
+        self.frame_stack = np.zeros((self.num_stacked_frames, grid_num_squares, grid_num_squares), dtype=np.uint8) # Initialize the frame stack
 
         self.action_space = spaces.Discrete(4) # "Up", "Right", "Down", "Left"
 
         # Update observation space to include multiple frames
         self.observation_space = spaces.Box(
             low=0, # 0 = empty space/wall, 1 = snake part, 2 = snake head, 3 = apple
-            high=2,
-            shape=(fov_distance, fov_distance, self.num_stacked_frames),
+            high=3,
+            shape=(self.num_stacked_frames, grid_num_squares, grid_num_squares),
             dtype=np.uint8
         )
 
@@ -49,28 +49,70 @@ class SnakeEnv(gym.Env):
         self.tgame.renderer.render_all()
 
     def step(self, actions):
-        self.step_count += 1
+        self.steps_count += 1
         previous_score = self.tgame.score
-        self.tgame.perform_action(Orientation(actions))
+        action_possible = self.tgame.perform_action(Orientation(actions))
 
-        done = self.tgame.tsnake.is_alive
+        terminated = not self.tgame.tsnake.is_alive
+        truncated = self.steps_count >= self.steps_max
+
         reward = 0
-        
-        if not self.tgame.tsnake.is_alive:
+        if terminated:
             reward = self.reward_collision
-        elif previous_score != self.tgame.score:
-            reward = self.reward_apple
-        elif self.step_count % 5 == 0:
-            reward = self.reward_surviving
-        else:
-            reward = self.reward_move
+        elif action_possible:
+            if previous_score != self.tgame.score:
+                reward = self.reward_apple
+            elif self.steps_count % 5 == 0:
+                reward = self.reward_surviving
+            else:
+                reward = self.reward_move
         
-        # Gymnasium v0.26+ returns 5 elements
-        # return obs, reward, terminated, truncated, info
+        observation = self._get_observation()
 
-    def reset(self):
+        # Create info dict for debugging
+        info = {
+            "score": self.tgame.score,
+            "steps": self.steps_count
+        }
+        
+        return observation, reward, terminated, truncated, info
+        
+    def _get_observation(self):
+        # Shift existing frames one position forward in the stack
+        if self.num_stacked_frames > 1 and self.steps_count > 1:
+            self.frame_stack[1:] = self.frame_stack[:-1]
+
+        # Create empty grid filled with zeros
+        current_grid = np.zeros((self.tgame.grid_num_squares, self.tgame.grid_num_squares), dtype=np.uint8)
+
+        # Add snake body parts (value 1)
+        for part in self.tgame.tsnake.snake_parts:
+            current_grid[part[1]][part[0]] = 1
+
+        # Add snake head (value 2)
+        current_grid[self.tgame.tsnake.head_y][self.tgame.tsnake.head_x] = 2
+
+        # Add apple (value 3)
+        current_grid[self.tgame.apple_coords[1]][self.tgame.apple_coords[0]] = 3
+
+        # Update the newest frame in the stack
+        self.frame_stack[0] = current_grid
+
+        return self.frame_stack
+
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)  # Reset the RNG if provided
         self.tgame.reset()
-        self.step_count = 0
+        self.steps_count = 0
+
+        # Clear frame stack
+        self.frame_stack = np.zeros((self.num_stacked_frames, self.tgame.grid_num_squares, self.tgame.grid_num_squares), dtype=np.uint8)
+
+        observation = self._get_observation()
+        info = {"score": 0, "steps": 0}
+
+        return observation, info
+
     
     def close(self):
         self.tgame.set_terminated(True)
