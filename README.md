@@ -5,8 +5,8 @@ A simple Snake game written using Python and the pygame library.  You can contro
 
 # Requirements
 
-- Python 3.11.x
-- Poetry 1.8+
+- Python 3.12.x
+- Poetry 1.8.x
 
 
 # Develop locally
