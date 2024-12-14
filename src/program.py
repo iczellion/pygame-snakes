@@ -41,29 +41,42 @@ def parse_commandline_args() -> tuple:
     return args.mode, args.debug
 
 def run(mode: Gamemode, debug: bool):
+    game_name: str = "Snake"
+    grid_size_pixels: int = 600
+    grid_num_squares: int = 20
+    model_path: str = "./.tmp/"
 
     if mode == Gamemode.INTERACTIVE:
-        tgame = TGame.initialize(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, framerate=10, inputs_enabled=True, rendering_enabled=True, debug=debug)
+        framerate: int = 10
+        tgame = TGame.initialize(game_name, grid_size_pixels, grid_num_squares, framerate, inputs_enabled=True, rendering_enabled=True, debug=debug)
         tgame.reset()
         tgame.start_game_loop()
     elif mode == Gamemode.AI:
-        env = SnakeEnv(game_name="Snake", grid_size_pixels=600, grid_num_squares=20, debug=debug)
-        env.reset()
-
-        for i in range(300): # run for 30 steps
-            if env.tgame.is_terminated:
-                env.close()
-                return
-
-            action = env.action_space.sample()
-            observation, reward, terminated, truncated, info = env.step(action)
-
-            if terminated:
-                env.reset()
-                return
-
-            env.render()
-            pygame.time.wait(200)
+        from ai_controller import AIController
+        ai_controller = AIController(
+            game_name=game_name,
+            grid_size_pixels=grid_size_pixels,
+            grid_num_squares=grid_num_squares,
+            framerate=15,  # Faster framerate for AI
+            inputs_enabled=False,
+            rendering_enabled=True,
+            debug=debug,
+            scratch_dir=model_path
+        )
+        ai_controller.run()
+    elif mode == Gamemode.TRAIN:
+        from ai_controller import AIController
+        ai_controller = AIController(
+            game_name=game_name,
+            grid_size_pixels=grid_size_pixels,
+            grid_num_squares=grid_num_squares,
+            framerate=20,  # No framerate limit during training
+            inputs_enabled=False,
+            rendering_enabled=False,  # Disable rendering during training
+            debug=debug,
+            scratch_dir=model_path
+        )
+        ai_controller.train()
 
     quit()
 
