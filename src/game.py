@@ -49,8 +49,21 @@ class TGame:
         self.tsnake = TSnake(default_orientation)
     
     def create_apple(self):
-        random_x = random.randrange(0, self.grid_num_squares)
-        random_y = random.randrange(0, self.grid_num_squares)
+        """
+        Generates the coordinates for a new apple in the Snake game.
+
+        The function randomly generates a pair of coordinates within the grid's bounds 
+        and ensures that the apple does not overlap with the snake's head or body. 
+        If a collision is detected, the process is repeated until a valid position is found.
+        """
+        while True:
+            random_x = random.randrange(0, self.grid_num_squares)
+            random_y = random.randrange(0, self.grid_num_squares)
+            apple_coords = (random_x, random_y)
+
+            if (apple_coords != (self.tsnake.head_x, self.tsnake.head_y)
+                and apple_coords not in self.tsnake.snake_parts):
+                break
 
         self.apple_coords = (random_x, random_y)
 
@@ -101,6 +114,7 @@ class TGame:
             (orientation == Orientation.LEFT and self.tsnake.head_orientation == Orientation.RIGHT) or \
             (orientation == Orientation.RIGHT and self.tsnake.head_orientation == Orientation.LEFT):
                 orientation = self.tsnake.head_orientation  # Maintain current direction
+                return False
 
         # Calculate where the head will be after moving
         new_head_x = self.tsnake.head_x
