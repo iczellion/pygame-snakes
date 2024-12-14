@@ -1,7 +1,7 @@
 import os
 
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines3.common.callbacks import CheckpointCallback
 import pygame
 
@@ -20,46 +20,59 @@ class AIController:
         self.model_path = os.path.join(self.scratch_dir, "model_checkpoints")
         self.model_prefix = "snake_ppo_model"
 
+    def __make_env(self, rank):
+        """
+        Utility function for multiprocessed env.
+        """
+        def _init():
+            env = SnakeEnv(
+                game_name=self.game_name,
+                grid_size_pixels=self.grid_size_pixels,
+                grid_num_squares=self.grid_num_squares,
+                framerate=self.framerate,
+                inputs_enabled=self.inputs_enabled,
+                rendering_enabled=self.rendering_enabled,
+                debug=self.debug
+            )
+            return env
+        return _init
+
     def train(self):
         """Train the snake AI model"""
-        # Create and wrap the environment
-        env = SnakeEnv(
-            game_name=self.game_name,
-            grid_size_pixels=self.grid_size_pixels,
-            grid_num_squares=self.grid_num_squares,
-            framerate=self.framerate,
-            inputs_enabled=self.inputs_enabled,
-            rendering_enabled=self.rendering_enabled,
-            debug=self.debug
-        )
-        env = DummyVecEnv([lambda: env])
 
-        # Initialize the PPO agent
-        model = PPO("MlpPolicy",
-                env,
-                device="cpu",
-                verbose=1, 
-                learning_rate=0.0003,
-                n_steps=2048,
-                batch_size=64,
-                n_epochs=10,
-                tensorboard_log="./.tmp/tensorboard"
-        )
+        # Create 8 environments running in parallel
+        num_envs = 8
+        env = SubprocVecEnv([self.__make_env(i) for i in range(num_envs)])
 
-        # Create checkpoint callback
-        checkpoint_callback = CheckpointCallback(
-            save_freq=100_000,  # Save every 100k steps
-            save_path=self.model_path,
-            name_prefix=self.model_prefix,
-            save_replay_buffer=True,
-            save_vecnormalize=True
-        )
+        try:
+            # Initialize the PPO agent
+            model = PPO("MlpPolicy",
+                    env,
+                    device="cpu",
+                    verbose=1, 
+                    learning_rate=0.0003,
+                    n_steps=2048,
+                    batch_size=64,
+                    n_epochs=10,
+                    tensorboard_log="./.tmp/tensorboard"
+            )
 
-        # Train the agent
-        model.learn(total_timesteps=2_000_000, callback=checkpoint_callback)
-        
-        # Save the final model
-        model.save(os.path.join(self.model_path, self.model_prefix))
+            # Create checkpoint callback
+            checkpoint_callback = CheckpointCallback(
+                save_freq=100_000,  # Save every 100k steps
+                save_path=self.model_path,
+                name_prefix=self.model_prefix,
+                save_replay_buffer=True,
+                save_vecnormalize=True
+            )
+
+            # Train the agent
+            model.learn(total_timesteps=200_000, callback=checkpoint_callback)
+            
+            # Save the final model
+            model.save(os.path.join(self.model_path, self.model_prefix))
+        finally:
+            env.close()
 
     def run(self):
         """Run the trained snake AI model"""
