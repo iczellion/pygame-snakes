@@ -67,7 +67,7 @@ class AIController:
             )
 
             # Train the agent
-            model.learn(total_timesteps=200_000, callback=checkpoint_callback)
+            model.learn(total_timesteps=2_000_000, callback=checkpoint_callback)
             
             # Save the final model
             model.save(os.path.join(self.model_path, self.model_prefix))

@@ -29,7 +29,7 @@ class SnakeEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0, # 0 = empty space/wall, 1 = snake part, 2 = snake head, 3 = apple
             high=3,
-            shape=(grid_num_squares * grid_num_squares + 6, ), # +2 for apple direction, +4 for current direction
+            shape=(grid_num_squares * grid_num_squares + 10, ), # +2 for apple direction, +4 for wall distances, +4 for current direction
             dtype=np.float32
         )
 
@@ -88,6 +88,14 @@ class SnakeEnv(gym.Env):
             self.tgame.apple_coords[1] - self.tgame.tsnake.head_y,
         ])
 
+        # Add distance to walls
+        wall_distances = np.array([
+            self.tgame.tsnake.head_y,  # Distance to top
+            self.tgame.grid_num_squares - self.tgame.tsnake.head_x - 1,  # Distance to right
+            self.tgame.grid_num_squares - self.tgame.tsnake.head_y - 1,  # Distance to bottom
+            self.tgame.tsnake.head_x  # Distance to left
+        ])
+
         # Add current direction
         current_direction = np.zeros(4)  # one-hot encoding of direction
         current_direction[self.tgame.tsnake.head_orientation.value] = 1
@@ -95,6 +103,7 @@ class SnakeEnv(gym.Env):
         obs = np.concatenate([
             current_grid.flatten(),
             apple_direction,
+            wall_distances,
             current_direction
         ])
 
