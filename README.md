@@ -35,26 +35,26 @@ The game supports three modes:
 ### 1. Interactive Mode
 Play the classic Snake game using arrow keys:
 ```shell
-python src/program.py int
+python src/main.py int
 ```
 
 ### 2. AI Mode
 Watch the trained AI play Snake:
 ```shell
-python src/program.py ai
+python src/main.py ai
 ```
 
 ### 3. Training Mode
 Train the AI model:
 ```shell
-python src/program.py train
+python src/main.py train
 ```
 
 ### Additional Options
 
 - Add `--debug` flag to enable debug visualization:
 ```shell
-python src/program.py int --debug
+python src/main.py int --debug
 ```
 
 ### Training Visualization
@@ -66,7 +66,7 @@ tensorboard --logdir ./.tmp/tensorboard
 
 ## Project Structure
 
-- `src/program.py` - Main entry point
+- `src/main.py` - Main entry point
 - `src/game.py` - Core game logic
 - `src/snake.py` - Snake entity implementation
 - `src/ai_controller.py` - AI training and execution
