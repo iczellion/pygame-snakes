@@ -29,7 +29,7 @@ class SnakeEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=0, # 0 = empty space/wall, 1 = snake part, 2 = snake head, 3 = apple
             high=3,
-            shape=(grid_num_squares * grid_num_squares + 10, ), # +2 for apple direction, +4 for wall distances, +4 for current direction
+            shape=(grid_num_squares * grid_num_squares + 14, ), # +2 for apple direction, +4 for wall distances, +4 for current direction, +4 for danger detection
             dtype=np.float32
         )
 
@@ -100,11 +100,38 @@ class SnakeEnv(gym.Env):
         current_direction = np.zeros(4)  # one-hot encoding of direction
         current_direction[self.tgame.tsnake.head_orientation.value] = 1
 
+        # Add danger detection for each possible direction (up, right, down, left)
+        danger = np.zeros(4)
+        for direction in range(4):
+            next_x = self.tgame.tsnake.head_x
+            next_y = self.tgame.tsnake.head_y
+            
+            if direction == Orientation.UP.value:
+                next_y -= 1
+            elif direction == Orientation.RIGHT.value:
+                next_x += 1
+            elif direction == Orientation.DOWN.value:
+                next_y += 1
+            elif direction == Orientation.LEFT.value:
+                next_x -= 1
+                
+            # Mark as dangerous if next position is:
+            # 1. Out of bounds
+            # 2. Part of snake's body
+            danger[direction] = (
+                next_x < 0 or 
+                next_x >= self.tgame.grid_num_squares or
+                next_y < 0 or 
+                next_y >= self.tgame.grid_num_squares or
+                (next_x, next_y) in self.tgame.tsnake.snake_parts
+            )
+
         obs = np.concatenate([
             current_grid.flatten(),
             apple_direction,
             wall_distances,
-            current_direction
+            current_direction,
+            danger
         ])
 
         return obs
