@@ -50,17 +50,6 @@ class Renderer:
         rect_apple = pygame.Rect(apple_x * size_of_one_square, apple_y * size_of_one_square, size_of_one_square, size_of_one_square)
         pygame.draw.rect(self.screen, apple_color, rect_apple)
     
-    def draw_fov(self):
-        fov_color = (195, 195, 195)
-        fov_distance = self.tgame.fov_distance
-        size_of_one_square = self.tgame.grid_size_pixels / self.tgame.grid_num_squares
-        fov_top_x_pixel = (self.tgame.tsnake.head_x * size_of_one_square) - (fov_distance * size_of_one_square)
-        head_top_y_pixel = (self.tgame.tsnake.head_y * size_of_one_square) - (fov_distance * size_of_one_square)
-        fov_area = (fov_distance * size_of_one_square * 2) + size_of_one_square
-
-        rect_area = pygame.Rect(fov_top_x_pixel, head_top_y_pixel, fov_area, fov_area)
-        pygame.draw.rect(self.screen, fov_color, rect_area)
-    
     def draw_score(self):
         font = pygame.font.Font(None, 36)
         score_text = f"Score: {self.tgame.score}"
@@ -77,7 +66,6 @@ class Renderer:
         self.draw_background()
 
         if self.tgame.debug:
-            self.draw_fov()
             self.draw_grid()
 
         self.draw_snake()
