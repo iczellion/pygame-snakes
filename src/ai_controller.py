@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 
 from stable_baselines3 import PPO
@@ -40,6 +41,9 @@ class AIController:
     def train(self):
         """Train the snake AI model"""
 
+        # Create a timestamp in the desired format
+        training_run_prefix = datetime.now().strftime("%Y%m%d_%H%M")
+
         # Create 8 environments running in parallel
         num_envs = 8
         env = SubprocVecEnv([self.__make_env(i) for i in range(num_envs)])
@@ -60,17 +64,20 @@ class AIController:
             # Create checkpoint callback
             checkpoint_callback = CheckpointCallback(
                 save_freq=100_000,  # Save every 100k steps
-                save_path=self.model_path,
+                save_path=os.path.join(self.model_path, training_run_prefix),
                 name_prefix=self.model_prefix,
                 save_replay_buffer=True,
                 save_vecnormalize=True
             )
 
             # Train the agent
-            model.learn(total_timesteps=2_000_000, callback=checkpoint_callback)
+            model.learn(total_timesteps=2_000_000
+                        ,callback=checkpoint_callback
+                        ,tb_log_name=f"{training_run_prefix}"
+            )
             
             # Save the final model
-            model.save(os.path.join(self.model_path, self.model_prefix))
+            model.save(os.path.join(self.model_path, training_run_prefix, self.model_prefix))
         finally:
             env.close()
 
