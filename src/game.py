@@ -135,7 +135,6 @@ class TGame:
                 print("Snake out of bound")
 
             self.tsnake.set_alive(False)
-            self.set_score(0)
             return False
 
         # Check if the next move would collide with snake body
@@ -144,7 +143,6 @@ class TGame:
                 print("Snake collided with itself")
 
             self.tsnake.set_alive(False)
-            self.set_score(0)
             return False
         
         # If we get here, the move is safe, so execute it

@@ -2,10 +2,41 @@ import os
 
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 import pygame
 
 from envs.snake_env import SnakeEnv
+
+class ScoreLoggingCallback(BaseCallback):
+    """
+    Custom callback for logging the score (from `info["score"]`) 
+    to TensorBoard after each episode ends.
+    """
+    def __init__(self, verbose=0):
+        super(ScoreLoggingCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:
+        """
+        This method is called after each call to `env.step()`.
+        We check if any of the parallel environments is done.
+        If done, log the final episode score to TensorBoard.
+        """
+        # self.locals is a dict of local variables from the RL algorithm
+        # "dones" is a list indicating whether the episode finished
+        # in each parallel environment
+        dones = self.locals["dones"]
+        infos = self.locals["infos"]
+        
+        for i, done in enumerate(dones):
+            if done:
+                # If the episode is over, we can fetch the "score" from info
+                if "score" in infos[i]:
+                    episode_score = infos[i]["score"]
+                    # Log it to TensorBoard
+                    self.logger.record("custom/episode_score", episode_score)
+
+        # By returning True, we tell SB3 to keep training
+        return True
 
 class AIController:
     def __init__(self, game_name: str, grid_size_pixels: int, grid_num_squares: int, framerate: int, scratch_dir: str, model_checkpoints_dir: str, training_run_prefix: str, inputs_enabled: bool = False, rendering_enabled: bool = False, debug: bool = False):
@@ -67,12 +98,14 @@ class AIController:
                 save_vecnormalize=True
             )
 
+            score_logging_callback = ScoreLoggingCallback()
+
             # Train the agent
             model.learn(total_timesteps=2_000_000
-                        ,callback=checkpoint_callback
+                        ,callback=[checkpoint_callback, score_logging_callback]
                         ,tb_log_name=f"{self.training_run_prefix}"
             )
-            
+
             # Save the final model
             model.save(os.path.join(self.model_path, self.training_run_prefix, self.model_prefix))
         finally:
