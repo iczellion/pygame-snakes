@@ -41,7 +41,11 @@ python src/main.py int
 ### 2. AI Mode
 Watch the trained AI play Snake:
 ```shell
+# Using latest checkpoint (default)
 python src/main.py ai
+
+# Using specific checkpoint training run
+python src/main.py ai --checkpoint 20241224_1017
 ```
 
 ### 3. Training Mode

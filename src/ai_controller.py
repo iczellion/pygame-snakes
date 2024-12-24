@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 
 from stable_baselines3 import PPO
@@ -9,7 +8,7 @@ import pygame
 from envs.snake_env import SnakeEnv
 
 class AIController:
-    def __init__(self, game_name: str, grid_size_pixels: int, grid_num_squares: int, framerate: int, inputs_enabled: bool = False, rendering_enabled: bool = False, debug: bool = False, scratch_dir: str = ".tmp"):
+    def __init__(self, game_name: str, grid_size_pixels: int, grid_num_squares: int, framerate: int, scratch_dir: str, model_checkpoints_dir: str, training_run_prefix: str, inputs_enabled: bool = False, rendering_enabled: bool = False, debug: bool = False):
         self.game_name = game_name
         self.grid_size_pixels = grid_size_pixels
         self.grid_num_squares = grid_num_squares
@@ -18,8 +17,9 @@ class AIController:
         self.rendering_enabled = rendering_enabled
         self.debug = debug
         self.scratch_dir = scratch_dir
-        self.model_path = os.path.join(self.scratch_dir, "model_checkpoints")
+        self.model_path = os.path.join(self.scratch_dir, model_checkpoints_dir)
         self.model_prefix = "snake_ppo_model"
+        self.training_run_prefix = training_run_prefix
 
     def __make_env(self, rank):
         """
@@ -41,9 +41,6 @@ class AIController:
     def train(self):
         """Train the snake AI model"""
 
-        # Create a timestamp in the desired format
-        training_run_prefix = datetime.now().strftime("%Y%m%d_%H%M")
-
         # Create 8 environments running in parallel
         num_envs = 8
         env = SubprocVecEnv([self.__make_env(i) for i in range(num_envs)])
@@ -64,7 +61,7 @@ class AIController:
             # Create checkpoint callback
             checkpoint_callback = CheckpointCallback(
                 save_freq=100_000,  # Save every 100k steps
-                save_path=os.path.join(self.model_path, training_run_prefix),
+                save_path=os.path.join(self.model_path, self.training_run_prefix),
                 name_prefix=self.model_prefix,
                 save_replay_buffer=True,
                 save_vecnormalize=True
@@ -73,11 +70,11 @@ class AIController:
             # Train the agent
             model.learn(total_timesteps=2_000_000
                         ,callback=checkpoint_callback
-                        ,tb_log_name=f"{training_run_prefix}"
+                        ,tb_log_name=f"{self.training_run_prefix}"
             )
             
             # Save the final model
-            model.save(os.path.join(self.model_path, training_run_prefix, self.model_prefix))
+            model.save(os.path.join(self.model_path, self.training_run_prefix, self.model_prefix))
         finally:
             env.close()
 
@@ -92,7 +89,7 @@ class AIController:
             rendering_enabled=self.rendering_enabled,
             debug=self.debug
         )
-        model = PPO.load(os.path.join(self.model_path, self.model_prefix),
+        model = PPO.load(os.path.join(self.model_path, self.training_run_prefix, self.model_prefix),
                          device="cpu"
         )
         
