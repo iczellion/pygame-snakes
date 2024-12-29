@@ -1,7 +1,8 @@
-import numpy as np
+from collections import deque
 
 import gymnasium as gym
 from gymnasium import spaces
+import numpy as np
 
 from snake import Orientation, TSnake
 from game import TGame
@@ -27,9 +28,9 @@ class SnakeEnv(gym.Env):
 
         # Update observation space to include multiple frames
         self.observation_space = spaces.Box(
-            low=0, # 0 = empty space/wall, 1 = snake part, 2 = snake head, 3 = apple
-            high=3,
-            shape=(grid_num_squares * grid_num_squares + 14, ), # +2 for apple direction, +4 for wall distances, +4 for current direction, +4 for danger detection
+            low=-9999,
+            high=9999,
+            shape=(43, ),
             dtype=np.float32
         )
 
@@ -69,69 +70,172 @@ class SnakeEnv(gym.Env):
         return observation, reward, terminated, truncated, info
         
     def _get_observation(self):
-        # Create empty grid filled with zeros
-        current_grid = np.zeros((self.tgame.grid_num_squares, self.tgame.grid_num_squares), dtype=np.int32)
+        """
+        Returns a 14-dimensional observation vector:
 
-        # Add snake body parts (value 1)
-        for part in self.tgame.tsnake.snake_parts:
-            current_grid[part[1]][part[0]] = 1
+        Index | Feature                      | Description
+        ------|------------------------------|-------------------------------------------
+        0     | wall_up                      | 1 if there is a wall directly above, else 0
+        1     | wall_right                   | 1 if there is a wall directly to the right, else 0
+        2     | wall_down                    | 1 if there is a wall directly below, else 0
+        3     | wall_left                    | 1 if there is a wall directly to the left, else 0
+        4     | snake_up                     | 1 if the snake's body is directly above, else 0
+        5     | snake_right                  | 1 if the snake's body is directly to the right, else 0
+        6     | snake_down                   | 1 if the snake's body is directly below, else 0
+        7     | snake_left                   | 1 if the snake's body is directly to the left, else 0
+        8     | delta_x_to_apple             | Horizontal distance to the apple (positive if apple is to the right, negative if to the left)
+        9     | delta_y_to_apple             | Vertical distance to the apple (positive if apple is below, negative if above)
+        10    | direction_up                 | 1 if the current direction is up, else 0
+        11    | direction_right              | 1 if the current direction is right, else 0
+        12    | direction_down               | 1 if the current direction is down, else 0
+        13    | direction_left               | 1 if the current direction is left, else 0
 
-        # Add snake head (value 2)
-        current_grid[self.tgame.tsnake.head_y][self.tgame.tsnake.head_x] = 2
-
-        # Add apple (value 3)
-        current_grid[self.tgame.apple_coords[1]][self.tgame.apple_coords[0]] = 3
-
-        # Add direction to apple
-        apple_direction = np.array([
-            self.tgame.apple_coords[0] - self.tgame.tsnake.head_x,
-            self.tgame.apple_coords[1] - self.tgame.tsnake.head_y,
-        ])
-
-        # Add distance to walls
-        wall_distances = np.array([
-            self.tgame.tsnake.head_y,  # Distance to top
-            self.tgame.grid_num_squares - self.tgame.tsnake.head_x - 1,  # Distance to right
-            self.tgame.grid_num_squares - self.tgame.tsnake.head_y - 1,  # Distance to bottom
-            self.tgame.tsnake.head_x  # Distance to left
-        ])
+        Notes:
+        - `delta_x_to_apple` and `delta_y_to_apple` represent the relative position of the apple with respect to the snake's head.
+        - The direction features (indices 10-13) use one-hot encoding to indicate the snake's current movement direction.
+        
+        Returns:
+            np.ndarray: A 14-dimensional numpy array of type float32 representing the current state observation.
+        """
+        # Convenience references
+        head_x = self.tgame.tsnake.head_x
+        head_y = self.tgame.tsnake.head_y
+        apple_x, apple_y = self.tgame.apple_coords
+        grid_size = self.tgame.grid_num_squares
+        snake_body = set(self.tgame.tsnake.snake_parts)  # So membership checks are O(1)
 
         # Add current direction
         current_direction = np.zeros(4)  # one-hot encoding of direction
         current_direction[self.tgame.tsnake.head_orientation.value] = 1
 
-        # Add danger detection for each possible direction (up, right, down, left)
-        danger = np.zeros(4)
-        for direction in range(4):
-            next_x = self.tgame.tsnake.head_x
-            next_y = self.tgame.tsnake.head_y
-            
-            if direction == Orientation.UP.value:
-                next_y -= 1
-            elif direction == Orientation.RIGHT.value:
-                next_x += 1
-            elif direction == Orientation.DOWN.value:
-                next_y += 1
-            elif direction == Orientation.LEFT.value:
-                next_x -= 1
-                
-            # Mark as dangerous if next position is:
-            # 1. Out of bounds
-            # 2. Part of snake's body
-            danger[direction] = (
-                next_x < 0 or 
-                next_x >= self.tgame.grid_num_squares or
-                next_y < 0 or 
-                next_y >= self.tgame.grid_num_squares or
-                (next_x, next_y) in self.tgame.tsnake.snake_parts
+        # Add direction to apple
+        delta_x_to_apple = self.tgame.apple_coords[0] - self.tgame.tsnake.head_x
+        delta_y_to_apple = self.tgame.apple_coords[1] - self.tgame.tsnake.head_y
+
+        # Local view (5x5 window centered on the snake's head)
+        local_view = np.zeros((5, 5), dtype=np.float32)
+        for i in range(5):
+            for j in range(5):
+                # Convert (i, j) in local window to actual board coords
+                board_x = head_x + (j - 2)
+                board_y = head_y + (i - 2)
+
+                # Out of bounds => wall
+                if board_x < 0 or board_x >= grid_size or board_y < 0 or board_y >= grid_size:
+                    local_view[i, j] = 3.0
+                else:
+                    # Check if it's the snake
+                    if (board_x, board_y) in snake_body:
+                        local_view[i, j] = 1.0
+                    # Check if it's the apple
+                    elif (board_x, board_y) == (apple_x, apple_y):
+                        local_view[i, j] = 2.0
+                    # Otherwise it's empty
+                    else:
+                        local_view[i, j] = 0.0
+
+        directions = {
+            0: (0, -1),   # Up    (dx=0,  dy=-1)
+            1: (1, 0),    # Right (dx=1,  dy=0)
+            2: (0, 1),    # Down  (dx=0,  dy=1)
+            3: (-1, 0)    # Left  (dx=-1, dy=0)
+        }
+
+        # Calculate corridor lengths in each direction
+        corridor_lengths = np.zeros((4,), dtype=np.float32)
+        for d in range(4):
+            dx, dy = directions[d]
+            steps = 0
+            cur_x, cur_y = head_x, head_y
+
+            while True:
+                # Move one step in the direction
+                cur_x += dx
+                cur_y += dy
+
+                # Check boundary
+                if cur_x < 0 or cur_x >= grid_size or cur_y < 0 or cur_y >= grid_size:
+                    break  # hit a wall
+                # Check snake body
+                if (cur_x, cur_y) in snake_body:
+                    break  # hit the snake's body
+
+                # If it's free, increment corridor length
+                steps += 1
+
+            corridor_lengths[d] = steps
+        
+         # Breadth-First search for distance to apple to avoid snake trapping/boxing itself
+        def bfs_distance_and_free_squares(
+            start_x, start_y, apple_x, apple_y, snake_body, grid_size
+        ):
+            """
+            Returns:
+                (bfs_distance_to_apple, free_squares_reachable)
+            where:
+            - bfs_distance_to_apple is -1 if apple not reachable from start.
+            - free_squares_reachable is the number of empty squares reachable from start.
+            """
+            # If the start is invalid (outside grid or in snake body), return defaults
+            if (
+                start_x < 0 or start_x >= grid_size or
+                start_y < 0 or start_y >= grid_size or
+                (start_x, start_y) in snake_body
+            ):
+                return -1, 0
+
+            visited = set()
+            queue = deque([(start_x, start_y, 0)])
+            visited.add((start_x, start_y))
+
+            bfs_distance_to_apple = -1
+
+            while queue:
+                x, y, dist = queue.popleft()
+                if (x, y) == (apple_x, apple_y):
+                    bfs_distance_to_apple = dist
+                    # Do NOT break if you still want to explore all reachable squares 
+                    # for the free_squares count. 
+                    # If you only need BFS distance, you can break here. 
+                    # But let's keep exploring for the full free-squares count.
+
+                # Check neighbors
+                for nx, ny in [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]:
+                    if (
+                        0 <= nx < grid_size and
+                        0 <= ny < grid_size and
+                        (nx, ny) not in snake_body and
+                        (nx, ny) not in visited
+                    ):
+                        visited.add((nx, ny))
+                        queue.append((nx, ny, dist + 1))
+
+            free_squares_reachable = len(visited)
+            return bfs_distance_to_apple, free_squares_reachable
+        
+        bfs_features = []
+        for action in range(4):
+            dx, dy = directions[action]
+            next_x = head_x + dx
+            next_y = head_y + dy
+
+            distance_to_apple, free_squares = bfs_distance_and_free_squares(
+                next_x, next_y, apple_x, apple_y, snake_body, grid_size
             )
 
+            # Add them to a list
+            bfs_features.append(distance_to_apple)
+            bfs_features.append(free_squares)
+
+        # Now we have 8 BFS features in bfs_features (2 for each direction).
+        bfs_features = np.array(bfs_features, dtype=np.float32)
+
         obs = np.concatenate([
-            current_grid.flatten(),
-            apple_direction,
-            wall_distances,
+            np.array([delta_x_to_apple, delta_y_to_apple], dtype=np.float32),
             current_direction,
-            danger
+            local_view.flatten(),
+            corridor_lengths,
+            bfs_features
         ])
 
         return obs

@@ -82,10 +82,10 @@ class AIController:
                     env,
                     device="cpu",
                     verbose=1, 
-                    learning_rate=0.0003,
+                    learning_rate=0.00001,
                     n_steps=2048,
-                    batch_size=64,
-                    n_epochs=10,
+                    batch_size=256,
+                    n_epochs=20,
                     tensorboard_log="./.tmp/tensorboard"
             )
 
@@ -101,7 +101,7 @@ class AIController:
             score_logging_callback = ScoreLoggingCallback()
 
             # Train the agent
-            model.learn(total_timesteps=2_000_000
+            model.learn(total_timesteps=20_000_000
                         ,callback=[checkpoint_callback, score_logging_callback]
                         ,tb_log_name=f"{self.training_run_prefix}"
             )

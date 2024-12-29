@@ -63,7 +63,7 @@ def get_last_directory_asc(base_path: str) -> str:
 def run(mode: Gamemode, debug: bool = False, checkpoint_path: str = None):
     game_name: str = "Snake"
     grid_size_pixels: int = 600
-    grid_num_squares: int = 20
+    grid_num_squares: int = 10
     scratch_dir: str = "./.tmp/"
     model_checkpoints_dir: str = "model_checkpoints"
     training_run_prefix = datetime.now().strftime("%Y%m%d_%H%M")
